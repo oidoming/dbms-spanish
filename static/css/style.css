@@ -1,7 +1,7 @@
 
-.item2 { grid-area: menu; resize: horizontal; overflow: auto; }
-.item3 { grid-area: main; }
-.item5 { grid-area: footer; }
+.item2 { grid-area: menu; resize: horizontal; overflow: auto; padding-left: 10%;}
+.item3 { grid-area: main; text-align: center;}
+.item5 { grid-area: footer; text-align: center;}
 
 .grid-container {
   display: grid;
@@ -15,7 +15,6 @@
 
 .grid-container > div {
   background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
   padding: 20px 0;
   font-size: 30px;
 }
@@ -29,4 +28,58 @@
 #query {
     width: 250px;
     height: 25px;
+}
+
+/* Remove default bullets */
+ul, #myUL {
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the caret/arrow */
+.caret {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.active {
+  display: block;
+}
+
+table, td, th {  
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  padding: 15px;
 }

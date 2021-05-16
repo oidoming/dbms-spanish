@@ -11,9 +11,21 @@
     <div class="grid-container">
         <div class="item2">
             Tree
+            <ul id="myUL">
             {% for db in db_list %}
-                <p>{{db}}</p>
+                <li><span class="caret">{{db[0]}}</span>
+                    <ul class="nested">
+                        {% for table in get_tables(db) %}
+                            <li><span class="caret">{{table[0]}}</span>
+                                <ul class="nested">
+                                {% for col in get_columns(table,db) %}
+                                    <li> *{{col[0]}}</li>
+                                {% endfor %}
+                                </ul>
+                        {% endfor %}
+                    </ul>
             {% endfor %}
+            </ul>
         </div>
         <div class="item3">
             SQL STATMENT
@@ -26,6 +38,15 @@
         </div>
       </div>
     <script>
+        var toggler = document.getElementsByClassName("caret");
+        var i;
+
+        for (i = 0; i < toggler.length; i++) {
+        toggler[i].addEventListener("click", function() {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        });
+        }
     </script>
 </body>
 </html>
