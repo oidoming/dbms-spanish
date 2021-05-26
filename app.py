@@ -4,14 +4,22 @@ import mysql.connector
 import pandas as pd
 from flask import Flask, render_template, request
 from werkzeug.utils import redirect
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 
+load_dotenv()
+
+HOST = os.getenv('HOST')
+USER = os.getenv('USER')
+PASSWORD = os.getenv('PASSWORD')
+
 conn = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  password="spk117",
-  database="practica2"
+  host=HOST,
+  user=USER,
+  password=PASSWORD,
+  database="sakila"
 )
 
 print(conn)
@@ -41,21 +49,40 @@ def index():
 
         if 'select' in query:
             conn.rollback()
-            df = pd.read_sql(query, conn)
-            result = df.to_html(classes='table table-striped')
+            try:
+                df = pd.read_sql(query, conn)
+                result = df.to_html(classes='table table-striped')
+            except:
+                result = "Error al consultar"
+            #result = df.to_html(classes='table table-striped')
         elif 'usa base' in query:
             conn.close()
-            conn = mysql.connector.connect(
-                    host="localhost",
-                    user="root",
-                    password="spk117",
+            try:
+                conn = mysql.connector.connect(
+                    host=HOST,
+                    user=USER,
+                    password=PASSWORD,
                     database=query.replace('usa base ', '')[:-1])
+                result = "Conectado a la base de datos: " + query.replace('usa base ', '')[:-1]
+            except mysql.connector.Error as err:
+                conn = mysql.connector.connect(
+                        host=HOST,
+                        user=USER,
+                        password=PASSWORD,
+                        database="sakila"
+                        )
+                result = "Error. No se pudo cambiar de base de datos, no existe"
+                print("algo malo xd: ", err)
         else:
-            conn.rollback()
-            cur = conn.cursor()
-            cur.execute(query)
-            conn.commit()
-            cur.close()
+            try:
+                conn.rollback()
+                cur = conn.cursor()
+                cur.execute(query)
+                conn.commit()
+                cur.close()
+                result = "👍👍👍👍"
+            except:
+                result = "Error de consulta"
 
     return render_template('index.html', result=result, db_list=databases)
 

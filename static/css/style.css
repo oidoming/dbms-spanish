@@ -1,21 +1,44 @@
+html, body {
+  height: 100%;
+}
 
-.item2 { grid-area: menu; resize: horizontal; overflow: auto; padding-left: 10%;}
-.item3 { grid-area: main; text-align: center;}
-.item5 { grid-area: footer; text-align: center;}
+.item2 { 
+  grid-area: menu; 
+  padding-left: 15px; 
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.item3 { 
+  grid-area: main; 
+  text-align: center;
+}
+
+.item5 { 
+  grid-area: footer; 
+  text-align: center; 
+  overflow-y: auto;
+  overflow-x: auto;
+}
 
 .grid-container {
   display: grid;
   grid-template-areas:
     'menu main main main main'
+    'menu footer footer footer footer'
+    'menu footer footer footer footer'
+    'menu footer footer footer footer'
+    'menu footer footer footer footer'
     'menu footer footer footer footer';
   grid-gap: 10px;
-  background-color: #2196F3;
+  background-color: #14213d;
   padding: 10px;
+  height: 100vh;
 }
 
 .grid-container > div {
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 20px 0;
+  background-color: white;
+  padding: 20px;
   font-size: 30px;
 }
 
@@ -26,8 +49,9 @@
 }
 
 #query {
-    width: 250px;
-    height: 25px;
+  width: 75%;
+  margin-left: 12.5%;
+  margin-right: 12.5%;
 }
 
 /* Remove default bullets */
@@ -71,13 +95,15 @@ ul, #myUL {
 }
 
 table, td, th {  
-  border: 1px solid #ddd;
+  border: 1px solid #708090;
   text-align: left;
 }
 
 table {
   border-collapse: collapse;
-  width: 100%;
+  width: 50%;
+  margin-left: 25%;
+  margin-right: 25%;
 }
 
 th, td {
