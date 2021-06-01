@@ -1,24 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" 
+    rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>Document</title>
+    <title>SQL</title>
 </head>
 <body>
     <div class="grid-container">
         <div class="item2">
-            Tree
+            <h2>Tree</h2>
+            <ul id="myUL">
             {% for db in db_list %}
-                <p>{{db}}</p>
+                <li><span class="caret">{{db[0]}}</span>
+                    <ul class="nested">
+                        {% for table in get_tables(db) %}
+                            <li><span class="caret">{{table[0]}}</span>
+                                <ul class="nested">
+                                {% for col in get_columns(table,db) %}
+                                    <li> *{{col[0]}}</li>
+                                {% endfor %}
+                                </ul>
+                        {% endfor %}
+                    </ul>
             {% endfor %}
+            </ul>
         </div>
         <div class="item3">
-            SQL STATMENT
+            <h2>Consulta SQL</h2>
             <form action="/" method="POST">
-                <input type="text" name="query" id="query" autocomplete="off">
+                <input class="form-control" type="text" name="query" id="query" autocomplete="off" placeholder="SQL" aria-label="default input example">
             </form>
         </div>  
         <div class="item5">
@@ -26,6 +40,17 @@
         </div>
       </div>
     <script>
+        var toggler = document.getElementsByClassName("caret");
+        var i;
+
+        for (i = 0; i < toggler.length; i++) {
+        toggler[i].addEventListener("click", function() {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        });
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 </body>
 </html>

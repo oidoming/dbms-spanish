@@ -1,22 +1,44 @@
+html, body {
+  height: 100%;
+}
 
-.item2 { grid-area: menu; resize: horizontal; overflow: auto; }
-.item3 { grid-area: main; }
-.item5 { grid-area: footer; }
+.item2 { 
+  grid-area: menu; 
+  padding-left: 15px; 
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.item3 { 
+  grid-area: main; 
+  text-align: center;
+}
+
+.item5 { 
+  grid-area: footer; 
+  text-align: center; 
+  overflow-y: auto;
+  overflow-x: auto;
+}
 
 .grid-container {
   display: grid;
   grid-template-areas:
     'menu main main main main'
+    'menu footer footer footer footer'
+    'menu footer footer footer footer'
+    'menu footer footer footer footer'
+    'menu footer footer footer footer'
     'menu footer footer footer footer';
   grid-gap: 10px;
-  background-color: #2196F3;
+  background-color: #14213d;
   padding: 10px;
+  height: 100vh;
 }
 
 .grid-container > div {
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  padding: 20px 0;
+  background-color: white;
+  padding: 20px;
   font-size: 30px;
 }
 
@@ -27,6 +49,63 @@
 }
 
 #query {
-    width: 250px;
-    height: 25px;
+  width: 75%;
+  margin-left: 12.5%;
+  margin-right: 12.5%;
+}
+
+/* Remove default bullets */
+ul, #myUL {
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#myUL {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the caret/arrow */
+.caret {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.caret::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.active {
+  display: block;
+}
+
+table, td, th {  
+  border: 1px solid #708090;
+  text-align: left;
+}
+
+table {
+  border-collapse: collapse;
+  width: 50%;
+  margin-left: 25%;
+  margin-right: 25%;
+}
+
+th, td {
+  padding: 15px;
 }

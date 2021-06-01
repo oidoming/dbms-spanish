@@ -1,34 +1,48 @@
-#from sqlalchemy import create_engine
 from flask.helpers import url_for
-import psycopg2
+import mysql.connector
 import pandas as pd
 from flask import Flask, render_template, request
 from werkzeug.utils import redirect
-import re
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
-#engine = create_engine('postgresql://postgres:pass123@localhost:5432/postgres')
-#conn = psycopg2.connect("dbname=postgres user=postgres password=pass123")
-conn = psycopg2.connect(
-    host="localhost",
-    database="postgres",
-    user="postgres",
-    password="pass123")
-#cur = conn.cursor()
+
+load_dotenv()
+
+HOST = os.getenv('HOST')
+USER = os.getenv('USER')
+PASSWORD = os.getenv('PASSWORD')
+
+conn = mysql.connector.connect(
+  host=HOST,
+  user=USER,
+  password=PASSWORD,
+  database="sakila"
+)
+
 print(conn)
 
-df = pd.read_sql("""SELECT datname FROM pg_database;""", conn)
-df.head()
-print(df.head())
-print(df.columns.values)
+#get list of databases
+def get_databases():
+    databases = pd.read_sql("SELECT schema_name FROM information_schema.schemata WHERE schema_name not in ('information_schema','mysql','performance_schema','sys');", conn).values
+    return databases
 
-#result = df.to_html(classes='table table-striped')
-# rj = df.to_json()
-#conn.close()
+# Get list of tables and their columns of the databases to render in template
+@app.context_processor
+def utility_processor():
+    def get_tables(db):
+        return pd.read_sql(f"SHOW TABLES FROM {db[0]};", conn).values
 
-db_list = ['postgres', 'db1', 'db2']
+    def get_columns(table, db):
+        return pd.read_sql(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '{db[0]}' AND TABLE_NAME = '{table[0]}';", conn).values
+    
+    return dict(get_tables=get_tables, get_columns=get_columns)
+
+#db_list = ['postgres', 'db1', 'db2']
 result = ""
 
+# route main page (app)
 @app.route("/", methods=['POST', 'GET'])
 def index():
     if request.method == 'POST':
@@ -39,39 +53,44 @@ def index():
 
         if 'select' in query:
             conn.rollback()
-            df = pd.read_sql(query, conn)
-            result = df.to_html(classes='table table-striped')
+            try:
+                df = pd.read_sql(query, conn)
+                result = df.to_html(classes='table table-striped')
+            except:
+                result = "Error. Verifique la sintaxis"
+            #result = df.to_html(classes='table table-striped')
         elif 'usa base' in query:
             conn.close()
-            conn = psycopg2.connect(
-                    host="localhost",
-                    database=query.replace('usa base ', '')[:-1],
-                    user="postgres",
-                    password="pass123")
+            try:
+                conn = mysql.connector.connect(
+                    host=HOST,
+                    user=USER,
+                    password=PASSWORD,
+                    database=query.replace('usa base ', '')[:-1])
+                result = "Conectado a la base de datos: " + query.replace('usa base ', '')[:-1]
+            except mysql.connector.Error as err:
+                conn = mysql.connector.connect(
+                        host=HOST,
+                        user=USER,
+                        password=PASSWORD,
+                        database="sakila"
+                        )
+                result = "Error. No se pudo conectar a la base de datos solicitada. Verifique la consulta"
         else:
-            conn.rollback()
-            cur = conn.cursor()
-            cur.execute(query)
-            conn.commit()
-            cur.close()
+            try:
+                conn.rollback()
+                cur = conn.cursor()
+                cur.execute(query)
+                conn.commit()
+                cur.close()
+                result = "Comando exitoso 👍👍👍👍"
+            except:
+                result = "Error. Verifique la sintaxis"
 
-        #result = df.to_html(classes='table table-striped')
-        #handle(result)
-    return render_template('index.html', result=result, db_list=db_list)
-
-@app.route("/send_query", methods=['POST'])
-def send_query():
-    query = request.form.get('query')
-    print(query)
-    #result = df.to_html(classes='table table-striped')
-    result = df.to_html(classes='table table-striped')
-    return redirect(url_for('index'))
+    return render_template('index.html', result=result, db_list=get_databases())
 
 
-def handle(result):
-    result = df.to_html(classes='table table-striped')
-    return result
-
+# Convert spanish words to sql language
 def reserved_words(query: str):
     if 'lista' in query:
         query = query.replace('lista', 'select')
@@ -119,43 +138,9 @@ def reserved_words(query: str):
     elif 'borra' in query:
         query = query.replace('borra', 'delete from')
         query = query.replace('donde', 'where')
+    elif 'actualiza' in query:
+        query = query.replace('actualiza', 'update')
+        query = query.replace('establece', 'set')
+        query = query.replace('donde', 'where')
 
     return query
-
-equivalents = {
-    'crea base': 'create database',
-    'usa': '\c',
-    'borra base': 'delete database',
-    'crea tabla': 'create table',
-    'borra tabla': 'drop table',
-    'agrega campo': 'alter table',
-    'agrega columna': 'add column',
-    'inserta en': 'insert into',
-    'valores': 'values',
-    'borra': 'delete from',
-    'donde': 'where',
-    'lista': 'select'
-}
-
-'''
-    if 'lista' in query:
-        query = query.replace('lista', 'select')
-        #query = query.replace('de', 'from')
-        query = query.replace('[', '', 1)
-        query = query.replace(']', ' from', 1)
-        #to_move = re.search(r'\[(.*?)\]', query)
-        #query = query.replace('['+to_move+'] ', '')
-        #to_move = to_move[:0] + '(' + to_move[0:] + ')'
-        #query = query.replace('donde', 'donde ' + to_move)
-        if 'donde' in query:
-            to_move = re.search(r'\[(.*?)\]', query)
-            query = query.replace('['+to_move+'] ', '')
-            to_move = to_move[:0] + '(' + to_move[0:] + ')'
-            query = query.replace('donde', 'donde ' + to_move)
-
-            query = query.replace('donde', 'where')
-            if '[y]' in query:
-                query = query.replace('[y]', 'and')
-            if '[o]' in query:
-                query = query.replace('[o]', 'or')
-'''
