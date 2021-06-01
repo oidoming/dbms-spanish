@@ -1,4 +1,3 @@
-#from sqlalchemy import create_engine
 from flask.helpers import url_for
 import mysql.connector
 import pandas as pd
@@ -24,8 +23,12 @@ conn = mysql.connector.connect(
 
 print(conn)
 
-databases = pd.read_sql("SELECT schema_name FROM information_schema.schemata WHERE schema_name not in ('information_schema','mysql','performance_schema','sys');", conn).values
+#get list of databases
+def get_databases():
+    databases = pd.read_sql("SELECT schema_name FROM information_schema.schemata WHERE schema_name not in ('information_schema','mysql','performance_schema','sys');", conn).values
+    return databases
 
+# Get list of tables and their columns of the databases to render in template
 @app.context_processor
 def utility_processor():
     def get_tables(db):
@@ -36,9 +39,10 @@ def utility_processor():
     
     return dict(get_tables=get_tables, get_columns=get_columns)
 
-db_list = ['postgres', 'db1', 'db2']
+#db_list = ['postgres', 'db1', 'db2']
 result = ""
 
+# route main page (app)
 @app.route("/", methods=['POST', 'GET'])
 def index():
     if request.method == 'POST':
@@ -53,7 +57,7 @@ def index():
                 df = pd.read_sql(query, conn)
                 result = df.to_html(classes='table table-striped')
             except:
-                result = "Error al consultar"
+                result = "Error. Verifique la sintaxis"
             #result = df.to_html(classes='table table-striped')
         elif 'usa base' in query:
             conn.close()
@@ -71,8 +75,7 @@ def index():
                         password=PASSWORD,
                         database="sakila"
                         )
-                result = "Error. No se pudo cambiar de base de datos, no existe"
-                print("algo malo xd: ", err)
+                result = "Error. No se pudo conectar a la base de datos solicitada. Verifique la consulta"
         else:
             try:
                 conn.rollback()
@@ -80,13 +83,14 @@ def index():
                 cur.execute(query)
                 conn.commit()
                 cur.close()
-                result = "👍👍👍👍"
+                result = "Comando exitoso 👍👍👍👍"
             except:
-                result = "Error de consulta"
+                result = "Error. Verifique la sintaxis"
 
-    return render_template('index.html', result=result, db_list=databases)
+    return render_template('index.html', result=result, db_list=get_databases())
 
 
+# Convert spanish words to sql language
 def reserved_words(query: str):
     if 'lista' in query:
         query = query.replace('lista', 'select')
@@ -133,6 +137,10 @@ def reserved_words(query: str):
         query = query.replace('valores', 'values')
     elif 'borra' in query:
         query = query.replace('borra', 'delete from')
+        query = query.replace('donde', 'where')
+    elif 'actualiza' in query:
+        query = query.replace('actualiza', 'update')
+        query = query.replace('establece', 'set')
         query = query.replace('donde', 'where')
 
     return query
